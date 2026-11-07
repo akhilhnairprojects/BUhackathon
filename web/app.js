@@ -18,7 +18,7 @@ const DOW_F = [1.27, 1.05, 0.81, 0.86, 1.03, 1.05, 0.93];  // hour-late rate by 
 const LAYOVER = 90;                                       // minimum connection we book, minutes
 const MIS_SCALE = 0.59;                                   // hub missed-connection rate at 60 min -> 90 min
 const T = { teal: "#4A6B48", red: "#B1372B", amber: "#A9761D", blue: "#45413A", grey: "#CFC6B2", ink: "#17150F", muted: "#76715F", line: "#D8D2C4", paper: "#F5F2EC", paper2: "#E3DDD0" };
-const pct = (v, d = 0) => (v == null || isNaN(v)) ? "–" : (v * 100).toFixed(d) + "%";
+const pct = (v, d = 2) => (v == null || isNaN(v)) ? "–" : (v * 100).toFixed(d) + "%";
 const fmt = (v, d = 0) => (v == null || isNaN(v)) ? "–" : Number(v).toLocaleString(undefined, { maximumFractionDigits: d, minimumFractionDigits: d });
 const money = (v) => "$" + fmt(v);
 const hrs = (m) => (Math.max(m, 0) / 60).toFixed(1) + " h";
@@ -174,25 +174,25 @@ function Check({ airports, summary }) {
         <div class="rows">
           <div class="row"><span>Route</span><b>${c.legs}</b></div>
           <div class="row"><span>Total time</span><b>${hrs(c.time)}${c.stop ? ` · ${LAYOVER} min at ${c.stop}` : ""}</b></div>
-          ${c.kind === "nonstop" ? html`<div class="row"><span>Disrupted (15+ min)</span><b>${pct(c.dis)}</b></div><div class="row"><span>Cancelled</span><b>${pct(c.can, 1)}</b></div>`
-            : html`<div class="row"><span>Missed connection (est.)</span><b>${pct(c.mis, 1)}</b></div><div class="row"><span>Second leg</span><b>${CARRIER[c.carrier2] || c.carrier2}</b></div>`}
+          ${c.kind === "nonstop" ? html`<div class="row"><span>Disrupted (15+ min)</span><b>${pct(c.dis)}</b></div><div class="row"><span>Cancelled</span><b>${pct(c.can)}</b></div>`
+            : html`<div class="row"><span>Missed connection (est.)</span><b>${pct(c.mis)}</b></div><div class="row"><span>Second leg</span><b>${CARRIER[c.carrier2] || c.carrier2}</b></div>`}
           <div class="row"><span>Flights observed</span><b>${fmt(c.n)}${c.n2 ? ` · ${fmt(c.n2)}` : ""}</b></div>
         </div>
       </div>`; })}</div>
-      ${options.length > 1 && html`<div class="banner"><div><b>Book ${nice(best)}.</b> ${pct(best.p)} chance of being an hour late, ${((worst.p - best.p) * 100).toFixed(0)} points lower than ${nice(worst)}. Adjusted for a ${DAYS[dow]} in ${MONTHS[m]}.</div></div>`}
+      ${options.length > 1 && html`<div class="banner"><div><b>Book ${nice(best)}.</b> ${pct(best.p)} chance of being an hour late, ${((worst.p - best.p) * 100).toFixed(2)} points lower than ${nice(worst)}. Adjusted for a ${DAYS[dow]} in ${MONTHS[m]}.</div></div>`}
       <p class="foot">${rec ? `${options.filter(x => x.kind === "nonstop").length} nonstop and ` : "No nonstop flights in this slot; "}${options.filter(x => x.kind === "onestop").length} connecting options through ${Object.keys(conns).length} hubs (${fmt(checked)} leg pairs checked). Connections assume a ${LAYOVER}-minute layover on the same airline; their risk is estimated from the hub's simulated one-stop record and the reliability of the two legs; routes that fly more than 1.5x the direct distance are left out.</p>`}
     <div class="grid g2" style="margin-top:44px">
       <div class="card pad">${chartLeg ? html`<p class="chart-title">${chartLeg.title}</p><p class="chart-sub">${chartLeg.sub}</p>${byBand.length > 1 ? html`<${Bars} data=${byBand} highlight=${b} />` : html`<div class="foot">Not enough departures to compare.</div>`}` : html`<p class="chart-title">By departure time</p><div class="foot">Pick a route to compare departure times.</div>`}</div>
       <div class="card pad"><p class="chart-title">Weather exposure · ${MONTHS[m]}</p><p class="chart-sub">Share of days with adverse weather at each airport in this month</p>
-        ${wo && wd ? html`<div class="rows" style="margin-top:0"><div class="row"><span>Adverse-weather days at ${o}</span><b>${pct(wo[0])}</b></div><div class="row"><span>Adverse-weather days at ${d}</span><b>${pct(wd[0])}</b></div><div class="row"><span>Snow / freezing days</span><b>${pct(wo[1])} · ${pct(wd[1])}</b></div><div class="row"><span>Thunderstorm days</span><b>${pct(wo[2])} · ${pct(wd[2])}</b></div></div><p class="foot">Flights touching an airport with adverse weather are 1.8x as likely to be disrupted. ${DAYS[dow]}s run ${dowF >= 1 ? `${((dowF - 1) * 100).toFixed(0)}% above` : `${((1 - dowF) * 100).toFixed(0)}% below`} the average weekday for hour-late arrivals.</p>` : html`<div class="foot">No weather station matched.</div>`}
+        ${wo && wd ? html`<div class="rows" style="margin-top:0"><div class="row"><span>Adverse-weather days at ${o}</span><b>${pct(wo[0])}</b></div><div class="row"><span>Adverse-weather days at ${d}</span><b>${pct(wd[0])}</b></div><div class="row"><span>Snow / freezing days</span><b>${pct(wo[1])} · ${pct(wd[1])}</b></div><div class="row"><span>Thunderstorm days</span><b>${pct(wo[2])} · ${pct(wd[2])}</b></div></div><p class="foot">Flights touching an airport with adverse weather are 1.8x as likely to be disrupted. ${DAYS[dow]}s run ${dowF >= 1 ? `${((dowF - 1) * 100).toFixed(2)}% above` : `${((1 - dowF) * 100).toFixed(2)}% below`} the average weekday for hour-late arrivals.</p>` : html`<div class="foot">No weather station matched.</div>`}
       </div>
     </div>
     <${Section} title="Worth the stop?" hint="one-stops are built from real flight pairs, not tickets sold" />
     <div class="grid g3">
-      ${be ? html`<${Kpi} k="Nonstop · hour late" v=${pct(be.ns)} d="simulated, cancellations rebooked" tone="good" /><${Kpi} k="Best one-stop (90-min layover) · hour late" v=${pct(be.os)} d=${`+${((be.os - be.ns) * 100).toFixed(0)} pts · ${be.xh.toFixed(1)} extra hours per trip`} tone="bad" /><${Kpi} k="Fare saving needed to break even" v=${"$" + fmt(be.b100)} d=${`$${fmt(be.b50)} at $50/h · $${fmt(be.b150)} at $150/h · $${fmt(be.bm)} with a $500 meeting`} />`
-         : html`<${Kpi} k=${`Across ${fmt(bm.n)} city pairs · one-stop vs nonstop`} v=${"+" + (bm.pts * 100).toFixed(0) + " pts"} d="median extra chance of being an hour late" tone="bad" /><${Kpi} k="Extra time per trip (90-min layover)" v=${bm.xh.toFixed(1) + " h"} d="median · schedule plus expected delay" /><${Kpi} k="Fare saving needed to break even" v=${"$" + fmt(bm.b100)} d="median one-way, at $100 per hour of traveler time" />`}
+      ${be ? html`<${Kpi} k="Nonstop · hour late" v=${pct(be.ns)} d="simulated, cancellations rebooked" tone="good" /><${Kpi} k="Best one-stop (90-min layover) · hour late" v=${pct(be.os)} d=${`+${((be.os - be.ns) * 100).toFixed(2)} pts · ${be.xh.toFixed(1)} extra hours per trip`} tone="bad" /><${Kpi} k="Fare saving needed to break even" v=${"$" + fmt(be.b100)} d=${`$${fmt(be.b50)} at $50/h · $${fmt(be.b150)} at $150/h · $${fmt(be.bm)} with a $500 meeting`} />`
+         : html`<${Kpi} k=${`Across ${fmt(bm.n)} city pairs · one-stop vs nonstop`} v=${"+" + (bm.pts * 100).toFixed(2) + " pts"} d="median extra chance of being an hour late" tone="bad" /><${Kpi} k="Extra time per trip (90-min layover)" v=${bm.xh.toFixed(1) + " h"} d="median · schedule plus expected delay" /><${Kpi} k="Fare saving needed to break even" v=${"$" + fmt(bm.b100)} d="median one-way, at $100 per hour of traveler time" />`}
     </div>
-    <p class="foot">Overall: nonstop ${pct(summary.nsos["Nonstop"])} vs one-stop ${pct(summary.nsos["One-stop, min layover 45 min"])} (45-min layover) / ${pct(summary.nsos["One-stop, min layover 90 min"])} (90-min) chance of arriving an hour late. Missed connections fall from ${pct(summary.layover[45].mis, 1)} to ${pct(summary.layover[90].mis, 1)} with a 90-minute minimum layover.</p>`;
+    <p class="foot">Overall: nonstop ${pct(summary.nsos["Nonstop"])} vs one-stop ${pct(summary.nsos["One-stop, min layover 45 min"])} (45-min layover) / ${pct(summary.nsos["One-stop, min layover 90 min"])} (90-min) chance of arriving an hour late. Missed connections fall from ${pct(summary.layover[45].mis)} to ${pct(summary.layover[90].mis)} with a 90-minute minimum layover.</p>`;
 }
 
 // ------------------------------------------------------------------ screen 2 · opportunity cost
@@ -253,13 +253,13 @@ function Hubs({ airports, summary }) {
       <div class="card pad"><p class="chart-title">Share of one-stop trips arriving an hour late</p><p class="chart-sub">60-minute minimum layover</p>
         <${HBars} data=${hubs.map(h => ({ label: `${h.hub} · ${h.name.replace(" International Airport", "").replace(" Airport", "").slice(0, 26)}`, v: h.sev }))} maxV=${0.26} color=${(d) => d.v < 0.12 ? T.teal : d.v > 0.165 ? T.red : T.grey} rowH=${28} labelW=${215} valueFmt=${(v) => pct(v)} /></div>
       <div>
-        <div class="card rcard best"><div class="tag">Best connecting hub</div><div class="name">${top.hub} · ${top.name}</div><div class="big" style="color:${T.ink}">${pct(top.sev)}</div><div class="meta">hour late · missed connection ${pct(top.mis)} · stranded overnight ${pct(top.ov, 1)}</div></div>
-        <div class="card rcard" style="margin-top:32px"><div class="tag" style="color:${T.red}">Riskiest connecting hub</div><div class="name">${bot.hub} · ${bot.name}</div><div class="big" style="color:${T.red}">${pct(bot.sev)}</div><div class="meta">hour late · missed connection ${pct(bot.mis)} · stranded overnight ${pct(bot.ov, 1)}</div>
-          <div class="rows"><div class="row"><span>Minimum layover 45 → 90 min</span><b>missed connections ${pct(summary.layover[45].mis, 1)} → ${pct(summary.layover[90].mis, 1)}</b></div><div class="row"><span>Winter-fragile hubs (Dec–Feb)</span><b>IAH · DFW · ATL · DCA</b></div><div class="row"><span>Nonstop, same city pairs</span><b>${pct(summary.nsos["Nonstop"])} hour late</b></div></div></div>
+        <div class="card rcard best"><div class="tag">Best connecting hub</div><div class="name">${top.hub} · ${top.name}</div><div class="big" style="color:${T.ink}">${pct(top.sev)}</div><div class="meta">hour late · missed connection ${pct(top.mis)} · stranded overnight ${pct(top.ov)}</div></div>
+        <div class="card rcard" style="margin-top:32px"><div class="tag" style="color:${T.red}">Riskiest connecting hub</div><div class="name">${bot.hub} · ${bot.name}</div><div class="big" style="color:${T.red}">${pct(bot.sev)}</div><div class="meta">hour late · missed connection ${pct(bot.mis)} · stranded overnight ${pct(bot.ov)}</div>
+          <div class="rows"><div class="row"><span>Minimum layover 45 → 90 min</span><b>missed connections ${pct(summary.layover[45].mis)} → ${pct(summary.layover[90].mis)}</b></div><div class="row"><span>Winter-fragile hubs (Dec–Feb)</span><b>IAH · DFW · ATL · DCA</b></div><div class="row"><span>Nonstop, same city pairs</span><b>${pct(summary.nsos["Nonstop"])} hour late</b></div></div></div>
       </div>
     </div>
     <div class="card" style="margin-top:32px; overflow:auto"><table class="table"><thead><tr><th>Hub</th><th>Airport</th><th class="num">City pairs</th><th class="num">Missed connection</th><th class="num">Hour late</th><th class="num">Stranded overnight</th><th class="num">Expected delay</th><th class="num">Winter fragility</th><th>Main carrier</th></tr></thead>
-      <tbody>${hubs.map(h => html`<tr><td><b>${h.hub}</b></td><td>${h.name}</td><td class="num">${fmt(h.markets)}</td><td class="num">${pct(h.mis, 1)}</td><td class="num">${pct(h.sev, 1)}</td><td class="num">${pct(h.ov, 1)}</td><td class="num">${fmt(h.delay)} min</td><td class="num">${h.wf == null ? "–" : "+" + pct(h.wf)}</td><td>${CARRIER[h.carrier] || h.carrier} (${pct(h.share)})</td></tr>`)}</tbody></table></div>
+      <tbody>${hubs.map(h => html`<tr><td><b>${h.hub}</b></td><td>${h.name}</td><td class="num">${fmt(h.markets)}</td><td class="num">${pct(h.mis)}</td><td class="num">${pct(h.sev)}</td><td class="num">${pct(h.ov)}</td><td class="num">${fmt(h.delay)} min</td><td class="num">${h.wf == null ? "–" : "+" + pct(h.wf)}</td><td>${CARRIER[h.carrier] || h.carrier} (${pct(h.share)})</td></tr>`)}</tbody></table></div>
     <${Section} title="Airports · disruption, weather exposure and winter fragility" hint="large and medium hubs · dot size = departures" />
     <div class="card pad">
       <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:10px">
@@ -270,7 +270,7 @@ function Hubs({ airports, summary }) {
       ${!geo ? html`<div class="skeleton" style="height:420px"></div>` : geo.error ? html`<div class="foot">Map outline could not be loaded.</div>` : html`<svg viewBox="0 0 960 600" width="100%" style="display:block">
         <path d=${geo.nation} fill=${T.paper2} fill-opacity="0.55" stroke=${T.ink} stroke-width="0.6" /><path d=${geo.states} fill="none" stroke=${T.paper} stroke-width="1" />
         ${big.map(a => { const p = geo.proj([a.lon, a.lat]); if (!p) return null; const v = val(a); const r = 4 + Math.sqrt(a.dep / maxDep) * 22; return html`<g><circle cx=${p[0]} cy=${p[1]} r=${r} fill=${colorOf(v)} fill-opacity="0.92" stroke=${T.paper} stroke-width="1.2"><title>${a.code} · ${a.full}
-Disrupted ${pct(a.dis, 1)} · cancelled ${pct(a.can, 2)}
+Disrupted ${pct(a.dis)} · cancelled ${pct(a.can)}
 Adverse-weather days (${MONTHS[month]}) ${pct(a.clim?.[month + 1]?.[0])} · winter fragility ${a.wf == null ? "–" : "+" + pct(a.wf)}
 ${fmt(a.dep)} departures · ${a.runways || "?"} runways · main carrier ${CARRIER[a.carrier] || a.carrier}</title></circle>${a.tier === "large" && r > 12 && html`<text class="num" x=${p[0]} y=${p[1] + 3.5} font-size="9" font-weight="500" text-anchor="middle" fill=${(v - lo) / (hi - lo || 1) > 0.55 ? T.paper : T.ink}>${a.code}</text>`}</g>`; })}
       </svg>`}

@@ -1,6 +1,8 @@
 """Upload the web app's data and code to the Vercel Blob store that trip-risk-checker.vercel.app reads from.
 
     python web/deploy_blob.py            # uploads web/data/**/*.json, app.js and styles.css
+    python web/deploy_blob.py --backup   # copies the current app.js and styles.css to backup/, the files
+                                         # trip-risk-checker-simple.vercel.app reads (frozen on purpose)
 Token: web/.blob_token (git-ignored) - the BLOB_READ_WRITE_TOKEN of the Vercel project.
 After changing index.html, redeploy it through the Vercel dashboard or the API (see DEPLOY.md).
 """
@@ -19,6 +21,11 @@ def put(rel: str, data: bytes, ctype: str, max_age: int):
 
 
 if __name__ == "__main__":
+    import sys
+    if "--backup" in sys.argv:
+        jobs = [("backup/app.js", (ROOT / "app.js").read_bytes(), "text/javascript; charset=utf-8", 60),
+                ("backup/styles.css", (ROOT / "styles.css").read_bytes(), "text/css; charset=utf-8", 60)]
+        print([put(*j) for j in jobs]); sys.exit()
     jobs = [(f.relative_to(ROOT / "data").as_posix(), f.read_bytes(), "application/json", 3600) for f in (ROOT / "data").rglob("*.json")]
     jobs += [("app.js", (ROOT / "app.js").read_bytes(), "text/javascript; charset=utf-8", 60),
              ("styles.css", (ROOT / "styles.css").read_bytes(), "text/css; charset=utf-8", 60)]

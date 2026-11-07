@@ -15,10 +15,14 @@ out.mkdir(parents=True, exist_ok=True)
 for f in out.glob("*.PNG"):
     f.unlink()
 pythoncom.CoInitialize()
-app = win32com.client.Dispatch("PowerPoint.Application")
+try:                                   # PowerPoint already open (the person may be reading a deck): borrow it, never quit it
+    app = win32com.client.GetActiveObject("PowerPoint.Application"); own = False
+except Exception:
+    app = win32com.client.Dispatch("PowerPoint.Application"); own = True
 pres = app.Presentations.Open(str(src), ReadOnly=True, Untitled=False, WithWindow=False)
 pres.Export(str(out), "PNG", 1600, 900)
 n = pres.Slides.Count
 pres.Close()
-app.Quit()
+if own:
+    app.Quit()
 print(f"rendered {n} slides to {out}")

@@ -27,3 +27,5 @@ video/node_modules/
 outputs/video_frames/
 video/assets/*.mp4
 outputs/video/
+web/dist/
+web/dist-simple/

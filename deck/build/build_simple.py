@@ -3,7 +3,8 @@
     python deck/build/build_simple.py "<template.pptx>" deck/Arrive_On_Time_Simple.pptx
 
 Keeps the template's own slides (fonts, logo, photos, dots), rewrites their text, swaps photos for
-our charts where a chart is the point, deletes the slides we do not use and reorders the rest.
+our charts where a chart is the point, and reorders: title, executive summary, introduction, four
+findings, recommendations, implementation, website, limitations, thank you, three appendix slides.
 """
 import copy
 import sys
@@ -50,6 +51,7 @@ def set_text(sh, text, size=None, bold_lead=None):
     run0.text = lines[0]
     if size:
         run0.font.size = Pt(size)
+        rpr = copy.deepcopy(run0._r.find("{http://schemas.openxmlformats.org/drawingml/2006/main}rPr"))
     if bold_lead:
         lead = copy.deepcopy(run0._r)
         lead.find("{http://schemas.openxmlformats.org/drawingml/2006/main}t").text = bold_lead
@@ -86,6 +88,33 @@ def swap_image(slide, group_name, img, align="left", width=None):
     return pic
 
 
+def clear(slide, keep):
+    """Drop every shape except the logo, the dots and the named ones."""
+    for sh in list(slide.shapes):
+        if sh.name not in {"Freeform 2", "Group 3", *keep}:
+            remove(sh)
+
+
+def clone(slide, proto, x, y, w, h, text, bold_lead=None, size=None):
+    """A copy of a template text box (so the font stays the template's), placed and filled."""
+    el = copy.deepcopy(proto._element)
+    el.nvSpPr.cNvPr.id = max(sh.shape_id for sh in slide.shapes) + 1
+    slide.shapes._spTree.append(el)
+    sh = slide.shapes[-1]
+    sh.left, sh.top, sh.width, sh.height = Inches(x), Inches(y), Inches(w), Inches(h)
+    sh.text_frame.word_wrap = True
+    set_text(sh, text, size=size, bold_lead=bold_lead)
+    if bold_lead:                     # the label in the app's brick, like the subheads elsewhere in the deck
+        sh.text_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor.from_string(BRICK)
+    return sh
+
+
+def grid(slide, proto, items, cols=2, x0=1.12, y0=4.95, w=8.3, h=1.75, gx=0.6, gy=0.1, size=12):
+    for i, (lead, body) in enumerate(items):
+        r, c = divmod(i, cols)
+        clone(slide, proto, x0 + c * (w + gx), y0 + r * (h + gy), w, h, body, bold_lead=lead + " ", size=size)
+
+
 def notes(slide, text):
     slide.notes_slide.notes_text_frame.text = text
 
@@ -111,7 +140,21 @@ set_text(shape(s, "TextBox 13"), f"{TEAM} · Questrom MSBA")
 notes(s, "Who we are and the ask in one sentence: cut the chance that a traveler misses a meeting, without blowing up cost or convenience. "
          "We looked at every US domestic flight of ten airlines for a full year, 6.4 million flights, plus the daily weather at both ends.")
 
-# ---------------------------------------------------------------- 2 · introduction (template slide 2)
+# ---------------------------------------------------------------- 2 · executive summary (template slide 4)
+s = slides[3]
+t = shape(s, "TextBox 15"); t.width = Inches(10)
+set_text(t, "Executive summary")
+proto = shape(s, "TextBox 16")
+clear(s, {"TextBox 15", "Group 13", "AutoShape 20"})
+grid(s, proto, [
+    ("The problem.", "One flight in ten gets the traveler there an hour late or not at all (9.7%); 23.5% are disrupted. Most flights land early; the cost sits in that tail, and the tail is predictable."),
+    ("What we found.", "Morning departures are a third as likely to be disrupted as evening ones. The right airline on a route is worth 5 to 7 points. Bad weather nearly doubles the risk and is foreseeable by month and airport. A stop lifts the chance of an hour-late arrival from 9% to 16%."),
+    ("What we recommend.", "Four defaults in the booking tool, not bans: morning preference for time-critical trips, nonstop first with 90-minute layovers via approved hubs, the preferred airline by route, and a weather buffer in risky months."),
+    ("The impact.", "Hour-late trips cut by about half, from 96 to roughly 50 per 1,000, and $13k to $76k saved per 1,000 trips depending on what an hour and a meeting are worth. The ask: a one-quarter pilot in two business units against a control group."),
+], cols=2, x0=1.12, y0=5.0, w=6.0, h=2.6, gx=0.5, gy=0.2, size=15)
+notes(s, "The whole story on one slide: the size of the problem, the four findings, the four defaults and what they are worth. Everything after this is evidence.")
+
+# ---------------------------------------------------------------- 3 · introduction (template slide 2)
 s = slides[1]
 set_text(shape(s, "TextBox 3"), "One flight in ten gets you there an hour late")
 set_text(shape(s, "TextBox 28"), "What we did")
@@ -220,15 +263,21 @@ set_text(shape(s, "TextBox 20"), "Put your own value on the meeting, an hour and
 set_text(shape(s, "TextBox 18"), f"Live at {URL}. Hubs & airports page maps disruption, weather exposure and winter fragility.")
 notes(s, "This is how the travel desk and travelers would use the analysis. It answers any route, date or constraint live, and it is our Q&A tool.")
 
-# ---------------------------------------------------------------- 10 · conclusion (template slide 14)
+# ---------------------------------------------------------------- 11 · limitations (template slide 14)
 s = slides[13]
-set_text(shape(s, "TextBox 23"), "Conclusion")
-set_text(shape(s, "TextBox 28"), "The ask: approve a one-quarter pilot in two business units, against a control group, and name the owners.")
-remove(shape(s, "TextBox 25")); remove(shape(s, "Group 16")); remove(shape(s, "Freeform 20"))
-set_text(shape(s, "TextBox 24"), "Decision needed today.")
-set_text(shape(s, "TextBox 27"), "Morning, nonstop, the right airline for the route, and a buffer in bad-weather months: four defaults that cut hour-late arrivals by about half.")
-set_text(shape(s, "TextBox 26"), "Modeled saving of $13k to $76k per 1,000 trips, depending on how an hour and a missed meeting are valued. Every number is live on the website.")
-notes(s, "Close on the decision: a controlled pilot with owners named. Whatever constraint comes up, the Trip Risk Checker answers it live.")
+t = shape(s, "TextBox 23"); t.width = Inches(10)
+set_text(t, "Limitations")
+proto = shape(s, "TextBox 27")
+clear(s, {"TextBox 23"})
+grid(s, proto, [
+    ("One year of data.", "Calendar 2025 only, so no year-to-year variation. Newark's spring runway closure and air-traffic-control trouble are in the data and treated as a case study, not a trend."),
+    ("Flights, not tickets.", "One-stop trips are constructed from real same-day flight pairs, not observed itineraries. SkyWest and Republic flights are assigned to an airline brand by a stated heuristic."),
+    ("Hindsight stands in for a forecast.", "The weather rule uses the weather that actually happened. A real one-to-three-day forecast will catch less, so this is the lowest-confidence rule."),
+    ("No fares.", "The data has no prices. Break-even figures say what a safer flight is worth paying for, not what it costs; the pilot measures the real fare premium."),
+    ("Disruption is noisy.", "At booking time the model reaches an AUC of 0.67 to 0.68. It is calibrated and ranks choices well, which is what a policy needs, but it cannot call a single flight."),
+    ("Assumptions are yours to set.", "Meeting value, hourly value and the cost of a night stranded drive the dollar figures; the website lets you change them. Route cells under 15 flights are hidden and thin cells are shrunk toward the route mean."),
+], cols=2, x0=1.12, y0=4.6, w=8.3, h=1.85, gx=0.6, gy=0.1, size=14)
+notes(s, "Say these before anyone asks. None of them changes the direction of the recommendations; they change how confident we are in the size of each effect, and the pilot is how we find out.")
 
 # ---------------------------------------------------------------- 11 · thank you (template slide 15)
 s = slides[14]
@@ -239,6 +288,51 @@ set_text(shape(s, "TextBox 27"), "November 2026")
 set_text(shape(s, "TextBox 11"), "Questions? The Trip Risk Checker is live for any route, date or constraint you want to test.")
 set_text(shape(s, "TextBox 14"), "Try it live")
 set_text(shape(s, "TextBox 15"), f"Created by: {TEAM}")
+
+# ---------------------------------------------------------------- appendix 1 · data and definitions (template slide 6)
+s = slides[5]
+t = shape(s, "TextBox 15"); t.width = Inches(12)
+set_text(t, "Appendix 1 · Data and definitions")
+proto = shape(s, "TextBox 16")
+clear(s, {"TextBox 15"})
+grid(s, proto, [
+    ("Flight data.", "BTS On-Time Performance, calendar 2025, ten reporting airlines, 6.4 million US domestic flights from the full monthly files, plus the 200k-flight student sample used for exploration and the risk model."),
+    ("Weather.", "NOAA GHCN-Daily station records matched to 324 of 326 airports. Daily flags for snow, freezing precipitation, heavy rain, thunderstorms, heavy fog and high wind; adverse = any of them. Climatology = share of such days by airport and month."),
+    ("Airports.", "OurAirports for coordinates and runways, FAA hub tiers, and Port Authority and FAA notices for the Newark runway closure (15 April to 2 June 2025)."),
+    ("Outcomes.", "Disrupted = arrived 15+ minutes late, cancelled or diverted. Hour late (severe) = 60+ minutes late, cancelled or diverted. Traveler burden = departure before 6 a.m., landing 11 p.m. to 4 a.m., a two-hour-plus wait, or a night stranded."),
+    ("Trip-level accounting.", "In trip tables a cancelled traveler is rebooked on the next completed flight of the same airline brand and counted at that arrival; trip delay is capped at 24 hours. Groups under 100 flights are hidden; rates carry 95% Wilson intervals."),
+    ("Cleaning.", "One function (src/prep.py) cleans the sample and the full file identically: outcome flags, local departure hour and band, season, holiday window, route key, carrier names. The cleaning log sits in outputs/tables."),
+], cols=2, x0=1.12, y0=4.6, w=8.3, h=1.85, gx=0.6, gy=0.1, size=14)
+
+# ---------------------------------------------------------------- appendix 2 · models (template slide 10)
+s = slides[9]
+t = shape(s, "TextBox 15"); t.width = Inches(12)
+set_text(t, "Appendix 2 · Models")
+proto = shape(s, "TextBox 17")
+clear(s, {"TextBox 15"})
+grid(s, proto, [
+    ("Booking-time risk model.", "Logistic regression and histogram gradient boosting (scikit-learn) on carrier, origin, destination, month, weekday, departure hour, distance, holiday window and the airports' weather climatology. No delay or cause fields, no tail numbers."),
+    ("Validation.", "Five-fold cross-validation grouped by flight date, so a storm day never sits in both folds. Disruption: AUC 0.67, Brier 0.168 against a 23.5% base rate; the riskiest tenth of bookings is disrupted 46% of the time. Hour late: AUC 0.68, Brier 0.084. The day's actual weather lifts AUC to 0.71."),
+    ("Adjusted effects.", "Odds ratios from the logistic model (reference Delta, 8 a.m., September, Tuesday) confirm that hour, carrier, month and airport each matter after controlling for the others. Airlines are also compared only within the same route, month and time band."),
+    ("Website route cells.", "For each route: carrier × departure band × season, with the hour-late rate, disruption, cancellations, p95 delay and scheduled time. Cells under 15 flights are hidden; thin cells are shrunk toward the route mean. Weekday factor = national hour-late rate on that weekday ÷ all days (Sunday 1.27, Tuesday 0.81)."),
+    ("Connecting options.", "Same brand, 90-minute layover, second leg in the band the traveler would actually depart in; detours over 1.5× the direct distance dropped. Risk = the larger of (either leg an hour late) and (the hub's simulated one-stop rate × 0.907 × √ leg reliability), × weekday factor."),
+    ("Missed connections.", "Hub rate at a 60-minute layover × 0.59 (the 90-minute ratio from the simulation) × first-leg reliability, bounded between 1% and 50%. Shown as an estimate, not an observation."),
+], cols=2, x0=1.12, y0=4.6, w=8.3, h=1.85, gx=0.6, gy=0.1, size=14)
+
+# ---------------------------------------------------------------- appendix 3 · simulations, costs and tools (template slide 13)
+s = slides[12]
+t = shape(s, "TextBox 23"); t.width = Inches(12)
+set_text(t, "Appendix 3 · Simulations, costs and tools")
+proto = shape(s, "TextBox 26")
+clear(s, {"TextBox 23"})
+grid(s, proto, [
+    ("Connection simulation.", "3.4 million one-stop itineraries built from real same-day flight pairs on 1,730 city pairs (src/connections.py). Booked: the first same-brand onward flight at least L minutes after the scheduled arrival, L = 45, 60, 90 or 120. Realised: the connection holds if the traveler is at the hub 30 minutes before the onward flight actually leaves; otherwise the next completed flight."),
+    ("Policy simulation.", "Each rule is replayed on the full 2025 file: within every route, the flights that satisfy the rule stand in for those actually taken, weighted by real volume. Outcomes per 1,000 trips: hour late, delay hours, two-hour waits, dawn departures, late-night landings, nights stranded."),
+    ("Cost model.", "Expected cost per trip = chance of an hour late × meeting value + delay hours × hourly value + nights stranded × night cost. Notebook defaults: $500 meeting, $50 / $100 / $150 per hour, $300 per night. Break-even fare for a one-stop = extra hours × hourly value, plus extra risk × meeting value."),
+    ("Website.", "Static Preact app on Vercel: Check a trip (route finder with connections, date and departure band), Cost of missing (your own values), Hubs and airports (ranking, table, map). Two decimals at trip-risk-checker.vercel.app; whole numbers at trip-risk-checker-simple.vercel.app."),
+    ("Tools.", "Python: pandas, NumPy, pyarrow, scikit-learn, statsmodels, matplotlib, seaborn; Jupyter notebooks built from scripts; Preact and htm, d3-geo and TopoJSON for the map; Vercel hosting; HyperFrames and Playwright for the walkthrough video."),
+    ("Notebooks.", "01 cleaning · 02 exploratory analysis · 03 weather enrichment · 04 route-level detail on the full file · 05 nonstop vs one-stop and hubs · 06 risk model and validation · 07 policy simulation and costs · 08 Newark case study and layovers. Every chart is in outputs/figures and every number in outputs/tables."),
+], cols=2, x0=1.12, y0=4.6, w=8.3, h=1.85, gx=0.6, gy=0.1, size=13)
 
 # subheads: the template's 20pt bold labels are sized for one short word; widen them so ours stay on one line
 for sl in slides:
@@ -268,7 +362,7 @@ for sl in slides:
                                 c.set("val", RULE)
 
 # ---------------------------------------------------------------- order and deletions
-order = [0, 1, 2, 8, 4, 7, 6, 11, 10, 13, 14]
+order = [0, 3, 1, 2, 8, 4, 7, 6, 11, 10, 13, 14, 5, 9, 12]
 sldIdLst = prs.slides._sldIdLst
 ids = list(sldIdLst)
 keep = [ids[i] for i in order]
