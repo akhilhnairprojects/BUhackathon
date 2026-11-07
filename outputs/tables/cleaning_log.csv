@@ -1,0 +1,10 @@
+issue,rule,rows_affected
+Times stored as HHMM numbers,"Read as text, convert to minutes after midnight; '2400' -> '0000'",200000
+Arrival date not given,Rebuilt scheduled/actual arrival timestamps from schedule (handles overnight + time zones),200000
+ARR_DELAY blank for cancelled flights,Kept; counted as disrupted and severely disrupted,2907
+ARR_DELAY blank for diverted flights,Kept; counted as disrupted and severely disrupted,570
+Delay-cause columns blank when delay < 15 min,Left blank; cause analysis uses delayed flights only,156488
+OP_CARRIER duplicates OP_UNIQUE_CARRIER,Dropped duplicate; renamed to CARRIER,200000
+"Extreme delays (> 1,000 min)",Kept (real events); report medians/percentiles beside means,91
+TAIL_NUM blank,Kept; only occurs on cancelled flights; not used as a feature,248
+Rows removed,None,0

@@ -1,0 +1,21 @@
+# raw data given by the organisers (too large / redistributed separately)
+questrom_full_flights_2025/
+questrom_student_package_2025/
+# downloaded external data and large processed files
+data/external/weather/
+data/external/*.txt
+data/external/*.csv
+data/processed/flights_full.parquet
+data/processed/flights_sample.parquet
+data/processed/flight_weather_flags.parquet
+data/processed/nonstop_trips.parquet
+data/processed/onestop_itineraries.parquet
+data/processed/weather_daily.parquet
+data/processed/risk_model.joblib
+# build artefacts
+deck/build/node_modules/
+deck/build/render/
+notebooks/.ipynb_checkpoints/
+__pycache__/
+*.log
+.claude/
