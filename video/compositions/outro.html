@@ -1,0 +1,28 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #F5F2EC; color: #17150F; font-family: "EB Garamond", serif; }
+    #outro-stage { position: absolute; left: 192px; right: 192px; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; }
+    #outro-title { font-size: 132px; line-height: 1.02; letter-spacing: -0.02em; }
+    #outro-title em { font-style: italic; color: #B1372B; }
+    #outro-title .w { display: inline-block; margin-right: 0.22em; }
+    #outro-rule { width: 100%; height: 2px; background: #17150F; margin-top: 40px; transform-origin: left center; }
+    #outro-url { font-family: "JetBrains Mono", monospace; font-size: 44px; letter-spacing: 0.04em; margin-top: 40px; color: #17150F; }
+    #outro-foot { font-family: "Inter", sans-serif; font-size: 28px; color: #76715F; margin-top: 18px; }
+  </style>
+  <div id="root" data-composition-id="outro" data-width="1920" data-height="1080">
+    <div id="outro-stage" class="clip" data-start="0" data-duration="5" data-track-index="0">
+      <h1 id="outro-title"><span class="w">Know</span><span class="w">the</span><span class="w">risk</span><span class="w"><em>before</em></span><span class="w"><em>you</em></span><span class="w"><em>book.</em></span></h1>
+      <div id="outro-rule"></div>
+      <div id="outro-url" data-var-text="site">trip-risk-checker.vercel.app</div>
+      <div id="outro-foot">Trip Risk Checker · Questrom Chart Champ Datathon</div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#outro-title .w", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out", stagger: 0.08 }, 0.3);
+    tl.fromTo("#outro-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.55, ease: "expo.out" }, 0.9);
+    tl.fromTo("#outro-url", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power4.out" }, 1.2);
+    tl.fromTo("#outro-foot", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.5);
+    window.__timelines["outro"] = tl;
+  </script>
+</template>

@@ -46,6 +46,10 @@ button, select, input { font: inherit; color: inherit; }
 .select { width: 100%; appearance: none; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2317150F' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 2px center; border: none; border-bottom: 1px solid var(--rule-2); border-radius: 0; padding: 8px 24px 8px 0; font-family: var(--serif); font-size: 22px; line-height: 1.2; cursor: pointer; }
 .select:hover { border-bottom-color: var(--ink); }
 .select:focus { outline: none; border-bottom-color: var(--ink); }
+.select.date { background-image: none; padding-right: 0; font-variant-numeric: tabular-nums; }
+.select.date::-webkit-calendar-picker-indicator { opacity: .7; cursor: pointer; }
+.select.date::-webkit-datetime-edit { padding: 0; }
+
 .section { margin: 44px 0 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .section h2 { font-family: var(--serif); font-weight: 400; font-size: 28px; letter-spacing: -.01em; margin: 0; line-height: 1.1; }
 .section .hint { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: right; }

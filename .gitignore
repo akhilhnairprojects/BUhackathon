@@ -20,3 +20,10 @@ __pycache__/
 *.log
 .claude/
 web/.blob_token
+# HyperFrames walkthrough video: tool state and renders (source clips and compositions are kept)
+video/.hyperframes/
+video/renders/
+video/node_modules/
+outputs/video_frames/
+video/assets/*.mp4
+outputs/video/

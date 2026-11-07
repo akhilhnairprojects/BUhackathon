@@ -1,0 +1,124 @@
+{
+ "check": {
+  "file": "assets/clip-check.mp4",
+  "duration": 33.93,
+  "marks": [
+   {
+    "t": 2.11,
+    "label": "loaded BOS->ORD"
+   },
+   {
+    "t": 5.88,
+    "label": "open To"
+   },
+   {
+    "t": 5.94,
+    "label": "To = DEN"
+   },
+   {
+    "t": 10.5,
+    "label": "date"
+   },
+   {
+    "t": 10.59,
+    "label": "date = 15 Dec"
+   },
+   {
+    "t": 14.01,
+    "label": "open time"
+   },
+   {
+    "t": 14.03,
+    "label": "time = afternoon"
+   },
+   {
+    "t": 17.76,
+    "label": "hover recommended"
+   },
+   {
+    "t": 21.57,
+    "label": "banner"
+   },
+   {
+    "t": 24.01,
+    "label": "scrolled to charts"
+   },
+   {
+    "t": 28.89,
+    "label": "scrolled to worth the stop"
+   }
+  ]
+ },
+ "cost": {
+  "file": "assets/clip-cost.mp4",
+  "duration": 24.2,
+  "marks": [
+   {
+    "t": 2.02,
+    "label": "loaded BOS->DEN"
+   },
+   {
+    "t": 5.14,
+    "label": "open cost page"
+   },
+   {
+    "t": 9.29,
+    "label": "grab meeting slider"
+   },
+   {
+    "t": 11.88,
+    "label": "meeting = higher"
+   },
+   {
+    "t": 15.76,
+    "label": "hour = higher"
+   },
+   {
+    "t": 18.41,
+    "label": "hover premium"
+   },
+   {
+    "t": 21.46,
+    "label": "hover chart"
+   }
+  ]
+ },
+ "hubs": {
+  "file": "assets/clip-hubs.mp4",
+  "duration": 29.63,
+  "marks": [
+   {
+    "t": 4.08,
+    "label": "open hubs page"
+   },
+   {
+    "t": 9.0,
+    "label": "best hub"
+   },
+   {
+    "t": 12.02,
+    "label": "scrolled to table"
+   },
+   {
+    "t": 14.94,
+    "label": "scrolled to map"
+   },
+   {
+    "t": 18.2,
+    "label": "metric = weather"
+   },
+   {
+    "t": 21.48,
+    "label": "month = July"
+   },
+   {
+    "t": 24.92,
+    "label": "metric = winter"
+   },
+   {
+    "t": 28.12,
+    "label": "hover a dot"
+   }
+  ]
+ }
+}
