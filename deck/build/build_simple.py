@@ -12,9 +12,14 @@ from pathlib import Path
 from PIL import Image
 from pptx import Presentation
 from pptx.util import Emu, Inches, Pt
+from pptx.dml.color import RGBColor
+import io, re, zipfile
+
+PAPER, INK, BRICK, RULE = "F5F2EC", "17150F", "B1372B", "D8D2C4"
 
 ROOT = Path(__file__).resolve().parents[2]
 FIG = ROOT / "outputs" / "figures"
+CH = FIG / "deck"            # charts recoloured to the app palette (deck/build/recolor_charts.py)
 TEAM = "[Team name]"
 URL = "trip-risk-checker.vercel.app"
 
@@ -125,7 +130,7 @@ set_text(shape(s, "TextBox 19"), "What we found")
 set_text(shape(s, "TextBox 17"), "A 7 p.m. departure is three times as likely to be disrupted as a 6 a.m. one. Delays snowball: every departure inherits the lateness of the aircraft before it.")
 set_text(shape(s, "TextBox 20"), "What it means")
 set_text(shape(s, "TextBox 18"), "Leaving between 7 and 10 a.m. keeps nearly all the benefit with no dawn start: 5.6% an hour late, against 14 to 15% in the evening.")
-swap_image(s, "Group 13", FIG / "02_disruption_by_hour.png")
+swap_image(s, "Group 13", CH / "02_disruption_by_hour.png")
 set_text(shape(s, "TextBox 16"), "Chance of disruption by scheduled departure hour, all flights.")
 remove(shape(s, "TextBox 30")); remove(shape(s, "Group 24")); remove(shape(s, "Freeform 28"))
 set_text(shape(s, "TextBox 29"), "Same airline, same route: evening is worse on 98% of routes.")
@@ -141,7 +146,7 @@ set_text(shape(s, "TextBox 18"), "What we found")
 set_text(shape(s, "TextBox 16"), "Like for like, United runs about 5 points safer than its rivals on shared routes; PSA and Alaska run 6 to 7 points worse.")
 set_text(shape(s, "TextBox 19"), "What it means")
 set_text(shape(s, "TextBox 17"), "On the 43% of trips where two or more airlines fly the route, the gap between best and worst is typically 7 points, and up to 22 on Boston to Chicago. Prefer by route, not by brand.")
-swap_image(s, "Group 13", FIG / "14_carrier_route_adjusted.png", align="right")
+swap_image(s, "Group 13", CH / "14_carrier_route_adjusted.png", align="right")
 notes(s, "Each airline is compared only with the other airlines flying the same route in the same month and time of day. Regional airlines are shown as operated.")
 
 # ---------------------------------------------------------------- 5 · finding 3 (template slide 5)
@@ -152,7 +157,7 @@ set_text(shape(s, "TextBox 18"), "What we found")
 set_text(shape(s, "TextBox 16"), "33% of flights are disrupted on adverse-weather days against 18% on clear days. Snow and freezing rain roughly double the risk. The airlines' own weather code captures only a sliver of this.")
 set_text(shape(s, "TextBox 19"), "What it means")
 set_text(shape(s, "TextBox 17"), "June, July and December are the risky months, and each airport has its own pattern. Book around it, and watch the forecast one to three days out.")
-swap_image(s, "Group 13", FIG / "10_weather_conditions.png")
+swap_image(s, "Group 13", CH / "10_weather_conditions.png")
 notes(s, "Every flight was joined to the daily weather record at both ends. The point is not that airlines are wrong; their weather code is defined narrowly. "
          "Weather risk is foreseeable by season and airport at booking time, and from the forecast a few days out.")
 
@@ -167,7 +172,7 @@ set_text(shape(s, "TextBox 23"), "Layover length matters")
 set_text(shape(s, "TextBox 19"), "Raising the minimum layover from 45 to 90 minutes cuts missed connections from 51 to 23 per 1,000 connecting trips.")
 set_text(shape(s, "TextBox 22"), "What it means")
 set_text(shape(s, "TextBox 18"), "A one-stop needs to be about $400 cheaper one way to pay for the traveler's extra time, before counting a missed meeting. Fly nonstop when you can.")
-swap_image(s, "Group 13", FIG / "17_nonstop_vs_onestop.png", align="right")
+swap_image(s, "Group 13", CH / "17_nonstop_vs_onestop.png", align="right")
 notes(s, "Built from 3.4 million one-stop itineraries constructed from real flight pairs on 1,730 city pairs. Simulated trips, not tickets sold. "
          "Hub ranking and winter fragility are on the Hubs page of the website.")
 
@@ -176,7 +181,7 @@ s = slides[6]
 set_text(shape(s, "TextBox 16"), "What we recommend")
 set_text(shape(s, "TextBox 17"), "Four defaults in the booking tool, not bans. Modeled on the same routes and volumes as flown; per 1,000 trips. "
          "Together they halve the chance of arriving an hour late and save $13k to $76k per 1,000 trips, depending on what an hour and a missed meeting are worth.")
-swap_image(s, "Group 14", FIG / "23_policy_impact.png", align="right")
+swap_image(s, "Group 14", CH / "23_policy_impact.png", align="right")
 tbl = shape(s, "Table 13").table
 rows = [["Rule", "What changes", "Impact per 1,000 trips"],
         ["1 · Morning preference", "Time-critical trips default to 7 to 10 a.m. departures", "Hour-late trips 96 to 55 (down 43%)"],
@@ -242,6 +247,25 @@ for sl in slides:
             f = sh.text_frame.paragraphs[0].runs[0].font
             if f.size and f.size.pt == 20 and f.bold:
                 sh.width = Inches(5.4)
+                for r in sh.text_frame.paragraphs[0].runs:
+                    r.font.color.rgb = RGBColor.from_string(BRICK)
+    # the app's paper ground on every slide
+    sl.background.fill.solid()
+    sl.background.fill.fore_color.rgb = RGBColor.from_string(PAPER)
+
+# table: ink header, hairline rules, like the app's tables
+A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+for sl in slides:
+    for sh in sl.shapes:
+        if sh.has_table:
+            for r, row in enumerate(sh.table.rows):
+                for cell in row.cells:
+                    if r == 0:
+                        cell.fill.solid(); cell.fill.fore_color.rgb = RGBColor.from_string(INK)
+                    for ln in cell._tc.tcPr:
+                        if ln.tag.startswith(A + "ln"):
+                            for c in ln.iter(A + "srgbClr"):
+                                c.set("val", RULE)
 
 # ---------------------------------------------------------------- order and deletions
 order = [0, 1, 2, 8, 4, 7, 6, 11, 10, 13, 14]
@@ -254,5 +278,35 @@ for sid in ids:
     sldIdLst.remove(sid)
 for sid in keep:
     sldIdLst.append(sid)
-prs.save(str(out))
+buf = io.BytesIO()
+prs.save(buf)
+
+# ---------------------------------------------------------------- app palette on the package itself
+# template colours are literal: black text and lines -> ink, the blue accent -> brick, table header
+# text -> paper; the blue logo and the cut-out 747 (white ground) are re-coloured as images.
+def tint(png_bytes, hex_rgb):
+    im = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
+    a = im.getchannel("A")
+    solid = Image.new("RGBA", im.size, tuple(int(hex_rgb[i:i + 2], 16) for i in (0, 2, 4)) + (255,))
+    solid.putalpha(a)
+    o = io.BytesIO(); solid.save(o, "PNG"); return o.getvalue()
+
+src_zip = zipfile.ZipFile(buf)
+out_zip = zipfile.ZipFile(str(out), "w", zipfile.ZIP_DEFLATED)
+for item in src_zip.infolist():
+    data = src_zip.read(item.filename)
+    if item.filename.startswith("ppt/slides/slide") and item.filename.endswith(".xml"):
+        t = data.decode("utf-8")
+        t = re.sub(r'srgbClr val="(000000|191919)"', f'srgbClr val="{INK}"', t)
+        t = re.sub(r'srgbClr val="5196[Bb][Aa]"', f'srgbClr val="{BRICK}"', t)
+        t = t.replace('srgbClr val="FFFFFF"', f'srgbClr val="{PAPER}"')
+        data = t.encode("utf-8")
+    elif item.filename == "ppt/media/image2.png":
+        data = tint(data, BRICK)
+    elif item.filename == "ppt/media/image3.svg":
+        data = data.replace(b'fill="#5196ba"', b'fill="#' + BRICK.lower().encode() + b'"')
+    elif item.filename == "ppt/media/image1.jpeg" and (CH / "plane_paper.png").exists():
+        o = io.BytesIO(); Image.open(CH / "plane_paper.png").convert("RGB").save(o, "JPEG", quality=94); data = o.getvalue()
+    out_zip.writestr(item, data)
+out_zip.close()
 print(f"wrote {out} with {len(keep)} slides")
