@@ -31,9 +31,9 @@
  },
  "ck5": {
   "scene": "check",
-  "text": "Every nonstop and same-airline connection is ranked by the chance of arriving an hour late. Under each number, you can read exactly how it was calculated.",
+  "text": "Every nonstop and same-airline connection is ranked by the chance of arriving an hour late, with the route, the total time and the cancellation rate.",
   "file": "assets/vo/ck5.mp3",
-  "dur": 9.86
+  "dur": 9.36
  },
  "ck6": {
   "scene": "check",
@@ -61,21 +61,15 @@
  },
  "co2": {
   "scene": "cost",
-  "text": "Set what the meeting is worth, and what an hour of your time is worth.",
+  "text": "Set three numbers: what the meeting is worth, what an hour of your time is worth, and what a night stranded costs.",
   "file": "assets/vo/co2.mp3",
-  "dur": 4.01
- },
- "co3": {
-  "scene": "cost",
-  "text": "If you are staying over, add the nights, the hotel rate and your daily expenses. That spend buys nothing if the meeting is missed, so it counts towards what is at stake.",
-  "file": "assets/vo/co3.mp3",
-  "dur": 10.27
+  "dur": 7.13
  },
  "co4": {
   "scene": "cost",
-  "text": "You get the expected cost of the recommended flight, of the riskiest option, and the gap between them: the most a safer fare is worth paying. Each figure shows its own working.",
+  "text": "You get the expected cost of the recommended flight, of the riskiest option, and the gap between them: the most a safer fare is worth paying.",
   "file": "assets/vo/co4.mp3",
-  "dur": 10.34
+  "dur": 8.35
  },
  "co5": {
   "scene": "cost",
