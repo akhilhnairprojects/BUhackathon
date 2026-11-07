@@ -1,11 +1,13 @@
-"""Record the three screen clips for the walkthrough video (a fake cursor is drawn into the page so the
-viewer can follow the clicks). Writes video/assets/clip-*.mp4 and video/assets/clips.json with the
-second at which each action happened, for placing captions.
+"""Record the three screen clips for the walkthrough video, paced to the narration (a fake cursor is drawn
+into the page so the viewer can follow the clicks). Writes video/assets/clip-*.mp4 and video/assets/clips.json
+with the second at which each narration line starts, for placing the voice and captions.
 
-    python video/record.py            # needs the web app running on localhost:8080
+    python video/narration.py              # first: the voice files and their lengths
+    python video/record.py [check|cost|hubs]   # needs the web app running on localhost:8080
 """
 import json
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -15,6 +17,8 @@ HERE = Path(__file__).resolve().parent
 ASSETS = HERE / "assets"
 ASSETS.mkdir(exist_ok=True)
 URL = "http://localhost:8080"
+NARR = json.loads((ASSETS / "narration.json").read_text(encoding="utf-8"))
+PAD = 0.7   # seconds of quiet after each line before the next action
 
 INIT = r"""
 (() => {
@@ -45,17 +49,30 @@ class Rec:
         self.page = self.ctx.new_page()
         self.t0 = time.time()
         self.marks = []
-        self.x, self.y = 960, 540
+        self.said = {}
 
-    def mark(self, label):
-        self.marks.append({"t": round(time.time() - self.t0, 2), "label": label})
-        print(f"  {self.marks[-1]['t']:6.2f}  {label}")
+    def now(self):
+        return time.time() - self.t0
+
+    def say(self, lid):
+        """The narration line `lid` starts now."""
+        self.said[lid] = self.now()
+        self.marks.append({"t": round(self.said[lid], 2), "id": lid})
+        print(f"  {self.said[lid]:6.2f}  {lid}  {NARR[lid]['text'][:50]}")
+
+    def until(self, lid, extra=0.0):
+        """Wait until the line `lid` has finished (plus a pause)."""
+        end = self.said[lid] + NARR[lid]["dur"] + PAD + extra
+        time.sleep(max(0.0, end - self.now()))
+
+    def hold(self, lid, extra=0.0):
+        self.say(lid)
+        self.until(lid, extra)
 
     def move_to(self, locator, dx=0.5, dy=0.5, steps=30):
         b = locator.bounding_box()
         x, y = b["x"] + b["width"] * dx, b["y"] + b["height"] * dy
         self.page.mouse.move(x, y, steps=steps)
-        self.x, self.y = x, y
         return x, y
 
     def click(self, locator, dx=0.5, dy=0.5, real=True):
@@ -65,14 +82,24 @@ class Rec:
             locator.click()
         time.sleep(0.25)
 
+    def drag(self, locator, frac0, frac1, steps=30):
+        """Drag a range input's thumb from one fraction of its width to another."""
+        b = locator.bounding_box()
+        x0 = b["x"] + 8 + (b["width"] - 16) * frac0; y0 = b["y"] + b["height"] / 2
+        x1 = b["x"] + 8 + (b["width"] - 16) * frac1
+        self.page.mouse.move(x0, y0, steps=30); self.page.mouse.down(); time.sleep(0.2)
+        for i in range(1, steps + 1):
+            self.page.mouse.move(x0 + (x1 - x0) * i / steps, y0); time.sleep(0.04)
+        self.page.mouse.up()
+
     def scroll(self, px, step=120, pause=0.03):
-        n = abs(px) // step
-        for _ in range(n):
+        for _ in range(abs(px) // step):
             self.page.mouse.wheel(0, step if px > 0 else -step)
             time.sleep(pause)
 
     def finish(self):
         path = self.page.video.path()
+        elapsed = self.now()
         self.ctx.close()
         src = Path(path)
         out = ASSETS / f"clip-{self.name}.mp4"
@@ -81,8 +108,11 @@ class Rec:
         src.unlink()
         dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(out)],
                                    capture_output=True, text=True).stdout.strip())
-        print(f"wrote {out.name} ({dur:.1f} s)")
-        return {"file": f"assets/{out.name}", "duration": round(dur, 2), "marks": self.marks}
+        # the recording starts at the first painted frame, some time after t0: shift the marks onto video time
+        offset = round(elapsed - dur, 2)
+        marks = [{"t": round(m["t"] - offset, 2), "id": m["id"]} for m in self.marks]
+        print(f"wrote {out.name} ({dur:.1f} s; recording started {offset:.2f} s after t0)")
+        return {"file": f"assets/{out.name}", "duration": round(dur, 2), "offset": offset, "marks": marks}
 
 
 def wait_results(page):
@@ -90,100 +120,70 @@ def wait_results(page):
     time.sleep(0.4)
 
 
-import sys
 ONLY = set(sys.argv[1:])
 with sync_playwright() as pw:
     clips = json.loads((ASSETS / "clips.json").read_text()) if (ASSETS / "clips.json").exists() else {}
 
-        # ---- clip 1: check a trip
+    # ---- clip 1: check a trip
     if not ONLY or "check" in ONLY:
         r = Rec(pw, "check"); p = r.page
-        p.goto(f"{URL}/#check", wait_until="networkidle"); wait_results(p); r.mark("loaded BOS->ORD")
-        time.sleep(2.0)
+        p.goto(f"{URL}/#check", wait_until="networkidle"); wait_results(p)
+        time.sleep(0.6)
         selects = p.locator("select.select")
-        r.click(selects.nth(1), real=False); r.mark("open To")
-        selects.nth(1).select_option("DEN"); r.mark("To = DEN"); wait_results(p)
-        time.sleep(2.2)
+        r.say("ck1"); r.move_to(selects.nth(0), 0.5, 0.5, steps=40); r.until("ck1")
+        r.say("ck2"); r.click(selects.nth(1), real=False); selects.nth(1).select_option("DEN"); wait_results(p); r.until("ck2")
         date = p.locator("input.date")
-        r.click(date, dx=0.3, real=False); r.mark("date")
-        date.fill("2026-12-15"); date.dispatch_event("change"); r.mark("date = 15 Dec"); wait_results(p)
-        time.sleep(2.2)
-        r.click(selects.nth(2), real=False); r.mark("open time")
-        selects.nth(2).select_option("3"); r.mark("time = afternoon"); wait_results(p)
-        time.sleep(1.2)
-        r.move_to(p.locator(".rcard.best"), 0.5, 0.45, steps=40); r.mark("hover recommended")
-        time.sleep(2.6)
-        r.move_to(p.locator(".banner"), 0.3, 0.5, steps=30); r.mark("banner")
-        time.sleep(2.0)
-        r.scroll(900); r.mark("scrolled to charts")
-        time.sleep(0.4)
-        r.move_to(p.locator(".chart-title").first, 0.5, 0.5, steps=30)
-        time.sleep(2.8)
-        r.scroll(600); r.mark("scrolled to worth the stop")
-        time.sleep(3.0)
+        r.say("ck3"); r.click(date, dx=0.3, real=False); date.fill("2026-12-15"); date.dispatch_event("change"); wait_results(p); r.until("ck3")
+        r.say("ck4"); r.click(selects.nth(2), real=False); selects.nth(2).select_option("3"); wait_results(p); r.until("ck4")
+        r.say("ck5"); r.move_to(p.locator(".rcard.best"), 0.5, 0.3, steps=40); time.sleep(2.0); r.move_to(p.locator(".rcard.best .how").first, 0.5, 0.5, steps=40); r.until("ck5")
+        r.say("ck6"); r.move_to(p.locator(".banner"), 0.3, 0.5, steps=30); r.until("ck6")
+        r.say("ck7"); r.scroll(900); time.sleep(0.3); r.move_to(p.locator(".chart-title").first, 0.5, 0.5, steps=30); r.until("ck7")
+        r.say("ck8"); r.scroll(700); time.sleep(0.3); r.move_to(p.locator(".kpi").nth(1), 0.5, 0.5, steps=30); r.until("ck8", 0.4)
         clips["check"] = r.finish()
 
-        # ---- clip 2: cost of missing
+    # ---- clip 2: cost of missing
     if not ONLY or "cost" in ONLY:
         r = Rec(pw, "cost"); p = r.page
         p.goto(f"{URL}/#check", wait_until="networkidle"); wait_results(p)
-        p.locator("select.select").nth(1).select_option("DEN"); wait_results(p); r.mark("loaded BOS->DEN")
-        time.sleep(1.2)
-        r.click(p.locator("a.tab", has_text="Cost of missing")); r.mark("open cost page")
-        p.wait_for_selector(".range"); time.sleep(2.4)
+        p.locator("select.select").nth(1).select_option("DEN"); wait_results(p)
+        time.sleep(0.6)
+        r.say("co1"); r.click(p.locator("a.tab", has_text="Cost of missing")); p.wait_for_selector(".range"); r.until("co1")
         ranges = p.locator("input.range")
-        b = ranges.nth(0).bounding_box()
-        x0 = b["x"] + b["width"] * 0.30 + 2; y0 = b["y"] + b["height"] / 2
-        p.mouse.move(x0, y0, steps=35); r.mark("grab meeting slider")
-        p.mouse.down(); time.sleep(0.2)
-        for i in range(1, 31):
-            p.mouse.move(x0 + (b["width"] * 0.36) * i / 30, y0); time.sleep(0.04)
-        p.mouse.up(); r.mark("meeting = higher")
-        time.sleep(2.2)
-        b = ranges.nth(1).bounding_box()
-        x0 = b["x"] + b["width"] * 0.333 + 2; y0 = b["y"] + b["height"] / 2
-        p.mouse.move(x0, y0, steps=30); p.mouse.down(); time.sleep(0.2)
-        for i in range(1, 21):
-            p.mouse.move(x0 + (b["width"] * 0.22) * i / 20, y0); time.sleep(0.04)
-        p.mouse.up(); r.mark("hour = higher")
-        time.sleep(2.0)
-        r.move_to(p.locator(".kpi").nth(2), 0.5, 0.5, steps=40); r.mark("hover premium")
-        time.sleep(2.4)
-        r.move_to(p.locator(".chart-title").last, 0.5, 0.5, steps=40); r.mark("hover chart")
-        time.sleep(3.0)
+        r.say("co2"); r.drag(ranges.nth(0), 0.30, 0.60); time.sleep(0.5); r.drag(ranges.nth(1), 1 / 3, 5 / 9, steps=20); r.until("co2")
+        r.say("co3"); r.drag(ranges.nth(2), 0.0, 2 / 7, steps=24); time.sleep(0.6); r.drag(ranges.nth(3), 1 / 3, 0.5, steps=16); time.sleep(0.5)
+        r.move_to(p.locator(".rows .how").nth(1), 0.5, 0.5, steps=30); r.until("co3")
+        r.say("co4"); r.move_to(p.locator(".kpi").nth(0), 0.5, 0.6, steps=40); time.sleep(2.2); r.move_to(p.locator(".kpi").nth(2), 0.5, 0.5, steps=40); r.until("co4")
+        r.say("co5"); r.scroll(400); time.sleep(0.3); r.move_to(p.locator(".chart-title").last, 0.5, 0.5, steps=40); r.until("co5", 0.4)
         clips["cost"] = r.finish()
 
-        # ---- clip 3: hubs and airports
+    # ---- clip 3: hubs and airports
     if not ONLY or "hubs" in ONLY:
         r = Rec(pw, "hubs"); p = r.page
         p.goto(f"{URL}/#check", wait_until="networkidle"); wait_results(p)
-        time.sleep(0.8)
-        r.click(p.locator("a.tab", has_text="Hubs")); r.mark("open hubs page")
-        p.wait_for_selector(".rcard.best"); time.sleep(0.5)
+        time.sleep(0.6)
+        r.say("hb1"); r.click(p.locator("a.tab", has_text="Hubs")); p.wait_for_selector(".rcard.best")
         try:
             p.wait_for_selector("svg circle", timeout=15000)
         except Exception:
             pass
-        time.sleep(2.0)
-        r.move_to(p.locator(".rcard.best"), 0.5, 0.4, steps=40); r.mark("best hub")
-        time.sleep(2.2)
-        r.scroll(1500); r.mark("scrolled to table")
-        time.sleep(2.4)
-        r.scroll(1100); r.mark("scrolled to map")
+        r.until("hb1")
+        r.say("hb2"); r.move_to(p.locator(".rcard.best"), 0.5, 0.4, steps=40); time.sleep(1.6); r.scroll(1500); r.until("hb2")
+        r.say("hb3"); r.scroll(1100)
         p.evaluate("document.querySelector('.seg').closest('.card').scrollIntoView({block:'start'}); window.scrollBy(0,-60)")
-        time.sleep(1.4)
-        seg = p.locator(".seg button", has_text="Adverse-weather"); r.click(seg, real=False); seg.dispatch_event("click"); r.mark("metric = weather")
+        time.sleep(1.2)
+        seg = p.locator(".seg button", has_text="Adverse-weather"); r.click(seg, real=False); seg.dispatch_event("click")
         time.sleep(1.4)
         msel = p.locator(".seg").locator("xpath=following-sibling::select").first
-        r.click(msel, real=False); msel.select_option("6"); r.mark("month = July")
+        r.click(msel, real=False); msel.select_option("6")
         time.sleep(1.6)
-        seg = p.locator(".seg button", has_text="Winter"); r.click(seg, real=False); seg.dispatch_event("click"); r.mark("metric = winter")
-        time.sleep(1.2)
+        seg = p.locator(".seg button", has_text="Winter"); r.click(seg, real=False); seg.dispatch_event("click")
+        r.until("hb3")
+        r.say("hb4")
         circles = p.locator("svg circle")
         n = circles.count()
         if n:
-            r.move_to(circles.nth(min(5, n - 1)), steps=40); r.mark("hover a dot")
-        time.sleep(2.8)
+            r.move_to(circles.nth(min(5, n - 1)), steps=40)
+        r.until("hb4", 0.6)
         clips["hubs"] = r.finish()
 
     (ASSETS / "clips.json").write_text(json.dumps(clips, indent=1))

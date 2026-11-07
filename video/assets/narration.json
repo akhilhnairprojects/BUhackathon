@@ -1,0 +1,116 @@
+{
+ "in1": {
+  "scene": "intro",
+  "text": "This is Trip Risk Checker. Before you book, it tells you the chance that a flight gets you to your meeting an hour late, from a full year of US flights.",
+  "file": "assets/vo/in1.mp3",
+  "dur": 9.53
+ },
+ "ck1": {
+  "scene": "check",
+  "text": "Start on Check a trip. First, choose where you fly from.",
+  "file": "assets/vo/ck1.mp3",
+  "dur": 3.7
+ },
+ "ck2": {
+  "scene": "check",
+  "text": "Then where you need to be. Any US airport works, not only the ones with a nonstop flight.",
+  "file": "assets/vo/ck2.mp3",
+  "dur": 5.86
+ },
+ "ck3": {
+  "scene": "check",
+  "text": "Pick your travel date. The day of the week and the month both change the risk.",
+  "file": "assets/vo/ck3.mp3",
+  "dur": 4.75
+ },
+ "ck4": {
+  "scene": "check",
+  "text": "And choose a departure time.",
+  "file": "assets/vo/ck4.mp3",
+  "dur": 1.87
+ },
+ "ck5": {
+  "scene": "check",
+  "text": "Every nonstop and same-airline connection is ranked by the chance of arriving an hour late. Under each number, you can read exactly how it was calculated.",
+  "file": "assets/vo/ck5.mp3",
+  "dur": 9.86
+ },
+ "ck6": {
+  "scene": "check",
+  "text": "The verdict tells you what to book, and how many points safer it is.",
+  "file": "assets/vo/ck6.mp3",
+  "dur": 4.08
+ },
+ "ck7": {
+  "scene": "check",
+  "text": "Further down: the same route by departure time, and the weather you can expect at both airports in that month.",
+  "file": "assets/vo/ck7.mp3",
+  "dur": 6.41
+ },
+ "ck8": {
+  "scene": "check",
+  "text": "And whether a stop is worth it: the extra risk, the extra hours, and the fare saving you would need to break even.",
+  "file": "assets/vo/ck8.mp3",
+  "dur": 7.15
+ },
+ "co1": {
+  "scene": "cost",
+  "text": "The second page puts a price on that risk.",
+  "file": "assets/vo/co1.mp3",
+  "dur": 2.74
+ },
+ "co2": {
+  "scene": "cost",
+  "text": "Set what the meeting is worth, and what an hour of your time is worth.",
+  "file": "assets/vo/co2.mp3",
+  "dur": 4.01
+ },
+ "co3": {
+  "scene": "cost",
+  "text": "If you are staying over, add the nights, the hotel rate and your daily expenses. That spend buys nothing if the meeting is missed, so it counts towards what is at stake.",
+  "file": "assets/vo/co3.mp3",
+  "dur": 10.27
+ },
+ "co4": {
+  "scene": "cost",
+  "text": "You get the expected cost of the recommended flight, of the riskiest option, and the gap between them: the most a safer fare is worth paying. Each figure shows its own working.",
+  "file": "assets/vo/co4.mp3",
+  "dur": 10.34
+ },
+ "co5": {
+  "scene": "cost",
+  "text": "Below, what each booking habit costs per trip.",
+  "file": "assets/vo/co5.mp3",
+  "dur": 2.9
+ },
+ "hb1": {
+  "scene": "hubs",
+  "text": "The third page ranks twenty connecting hubs by what happens to one-stop trips through them.",
+  "file": "assets/vo/hb1.mp3",
+  "dur": 5.42
+ },
+ "hb2": {
+  "scene": "hubs",
+  "text": "The best and the riskiest hub, then the full table.",
+  "file": "assets/vo/hb2.mp3",
+  "dur": 3.58
+ },
+ "hb3": {
+  "scene": "hubs",
+  "text": "The map covers every large and medium airport: disruption rate, adverse-weather days for any month, or winter fragility.",
+  "file": "assets/vo/hb3.mp3",
+  "dur": 8.59
+ },
+ "hb4": {
+  "scene": "hubs",
+  "text": "Dot size is departures. Hover any airport for its details.",
+  "file": "assets/vo/hb4.mp3",
+  "dur": 4.46
+ },
+ "ou1": {
+  "scene": "outro",
+  "text": "Know the risk before you book. Trip Risk Checker, at trip-risk-checker dot vercel dot app.",
+  "file": "assets/vo/ou1.mp3",
+  "dur": 5.86
+ }
+}

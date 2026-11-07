@@ -1,123 +1,90 @@
 {
  "check": {
   "file": "assets/clip-check.mp4",
-  "duration": 33.93,
+  "duration": 50.77,
+  "offset": 1.31,
   "marks": [
    {
-    "t": 2.11,
-    "label": "loaded BOS->ORD"
+    "t": 1.08,
+    "id": "ck1"
    },
    {
-    "t": 5.88,
-    "label": "open To"
+    "t": 5.48,
+    "id": "ck2"
    },
    {
-    "t": 5.94,
-    "label": "To = DEN"
+    "t": 12.04,
+    "id": "ck3"
    },
    {
-    "t": 10.5,
-    "label": "date"
+    "t": 17.49,
+    "id": "ck4"
    },
    {
-    "t": 10.59,
-    "label": "date = 15 Dec"
+    "t": 20.06,
+    "id": "ck5"
    },
    {
-    "t": 14.01,
-    "label": "open time"
+    "t": 30.62,
+    "id": "ck6"
    },
    {
-    "t": 14.03,
-    "label": "time = afternoon"
+    "t": 35.4,
+    "id": "ck7"
    },
    {
-    "t": 17.76,
-    "label": "hover recommended"
-   },
-   {
-    "t": 21.57,
-    "label": "banner"
-   },
-   {
-    "t": 24.01,
-    "label": "scrolled to charts"
-   },
-   {
-    "t": 28.89,
-    "label": "scrolled to worth the stop"
+    "t": 42.51,
+    "id": "ck8"
    }
   ]
  },
  "cost": {
   "file": "assets/clip-cost.mp4",
-  "duration": 24.2,
+  "duration": 36.13,
+  "offset": 0.63,
   "marks": [
    {
-    "t": 2.02,
-    "label": "loaded BOS->DEN"
+    "t": 1.96,
+    "id": "co1"
    },
    {
-    "t": 5.14,
-    "label": "open cost page"
+    "t": 5.4,
+    "id": "co2"
    },
    {
-    "t": 9.29,
-    "label": "grab meeting slider"
+    "t": 10.12,
+    "id": "co3"
    },
    {
-    "t": 11.88,
-    "label": "meeting = higher"
+    "t": 21.09,
+    "id": "co4"
    },
    {
-    "t": 15.76,
-    "label": "hour = higher"
-   },
-   {
-    "t": 18.41,
-    "label": "hover premium"
-   },
-   {
-    "t": 21.46,
-    "label": "hover chart"
+    "t": 32.13,
+    "id": "co5"
    }
   ]
  },
  "hubs": {
   "file": "assets/clip-hubs.mp4",
-  "duration": 29.63,
+  "duration": 27.93,
+  "offset": 1.14,
   "marks": [
    {
-    "t": 4.08,
-    "label": "open hubs page"
+    "t": 1.19,
+    "id": "hb1"
    },
    {
-    "t": 9.0,
-    "label": "best hub"
+    "t": 7.31,
+    "id": "hb2"
    },
    {
-    "t": 12.02,
-    "label": "scrolled to table"
+    "t": 11.59,
+    "id": "hb3"
    },
    {
-    "t": 14.94,
-    "label": "scrolled to map"
-   },
-   {
-    "t": 18.2,
-    "label": "metric = weather"
-   },
-   {
-    "t": 21.48,
-    "label": "month = July"
-   },
-   {
-    "t": 24.92,
-    "label": "metric = winter"
-   },
-   {
-    "t": 28.12,
-    "label": "hover a dot"
+    "t": 22.17,
+    "id": "hb4"
    }
   ]
  }
