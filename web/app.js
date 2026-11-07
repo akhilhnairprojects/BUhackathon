@@ -112,7 +112,7 @@ function Check({ airports, summary }) {
 }
 
 // ------------------------------------------------------------------ screen 2
-const RULES = [["A. Depart before 10 a.m.", "Depart before 10 a.m."], ["A'. Depart 7-9:59 a.m. (employee-friendly)", "Depart 07:00–09:59"], ["B. Preferred carrier on routes with a choice", "Preferred carrier (where there is a choice)"], ["A+B. Morning + preferred carrier", "Morning + preferred carrier"], ["D. Fly Tuesday or Wednesday", "Fly Tuesday or Wednesday"], ["   (for contrast) depart 5-9:59 p.m.", "(contrast) Evening departures"], ["   (for contrast) Sunday evening", "(contrast) Sunday evening"]];
+const RULES = [["A. Depart before 10 a.m.", "Depart before 10 a.m."], ["A'. Depart 7-9:59 a.m. (employee-friendly)", "Depart 07:00–09:59"], ["B. Preferred carrier on routes with a choice", "Preferred carrier (with a choice)"], ["A+B. Morning + preferred carrier", "Morning + preferred carrier"], ["D. Fly Tuesday or Wednesday", "Fly Tuesday or Wednesday"], ["   (for contrast) depart 5-9:59 p.m.", "(contrast) Evening departures"], ["   (for contrast) Sunday evening", "(contrast) Sunday evening"]];
 function Simulate({ summary }) {
   const [rate, setRate] = useState(100), [meet, setMeet] = useState(500), [hotel, setHotel] = useState(300);
   const [on, setOn] = useState(new Set(RULES.slice(0, 5).map(r => r[0])));
@@ -120,6 +120,7 @@ function Simulate({ summary }) {
   const base = pol["Baseline (all trips as flown)"];
   const cost = (p) => (p.delay_h * rate + p.hour_late * meet + p.overnight * hotel) / 1000;
   const rows = [["Baseline (all trips as flown)", "Today (as flown)"], ...RULES.filter(r => on.has(r[0]))].map(([k, l]) => ({ ...pol[k], label: l, cost: cost(pol[k]) }));
+  const baseRow = rows[0];
   const bestRule = rows.slice(1).sort((a, b) => a.hour_late - b.hour_late)[0];
   const toggle = (k) => setOn(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
   const buf = summary.buffer, maxB = Math.max(...Object.values(buf).flatMap(r => Object.values(r)));
@@ -139,14 +140,14 @@ function Simulate({ summary }) {
         ${bestRule && html`<div class="grid g3" style="margin-bottom:14px">
           <${Kpi} k=${`Hour late or stranded · ${bestRule.label}`} v=${fmt(bestRule.hour_late)} small="/ 1,000 trips" d=${`today ${fmt(base.hour_late)} · ${((bestRule.hour_late / base.hour_late - 1) * 100).toFixed(0)}%`} tone="good" />
           <${Kpi} k="Delay hours per 1,000 trips" v=${fmt(bestRule.delay_h)} d=${`today ${fmt(base.delay_h)}`} tone="good" />
-          <${Kpi} k="Modeled saving per 1,000 trips" v=${"$" + fmt(base.cost - bestRule.cost) + "k"} d="if fully adopted · excludes extra fares" />
+          <${Kpi} k="Modeled saving per 1,000 trips" v=${"$" + fmt(baseRow.cost - bestRule.cost) + "k"} d="if fully adopted · excludes extra fares" />
         </div>`}
         <div class="card pad"><p class="chart-title">Trips per 1,000 arriving an hour late or stranded</p><p class="chart-sub">Cancelled travelers rebooked on the next flight</p>
           <${HBars} data=${rows.map(r => ({ label: r.label, v: r.hour_late }))} maxV=${Math.max(...rows.map(r => r.hour_late)) * 1.15} color=${(d, i) => i === 0 ? T.grey : (d.label.startsWith("(contrast)") ? T.red : T.teal)} rowH=${34} labelW=${230} /></div>
       </div>
     </div>
     <div class="card" style="margin-top:14px; overflow:auto"><table class="table"><thead><tr><th>Rule</th><th class="num">Hour+ late or stranded</th><th class="num">Delay hours</th><th class="num">Stranded overnight</th><th class="num">Late-night arrivals</th><th class="num">Pre-6am departures</th><th class="num">Cost ($k)</th><th class="num">Saving vs today ($k)</th><th class="num">Trips covered</th></tr></thead>
-      <tbody>${rows.map((r, i) => html`<tr class=${i === 0 ? "base" : ""}><td>${r.label}</td><td class="num">${fmt(r.hour_late)}</td><td class="num">${fmt(r.delay_h)}</td><td class="num">${fmt(r.overnight, 1)}</td><td class="num">${fmt(r.late_night)}</td><td class="num">${fmt(r.early)}</td><td class="num">${fmt(r.cost)}</td><td class="num">${i === 0 ? "–" : fmt(base.cost - r.cost)}</td><td class="num">${r.cover == null ? "100%" : pct(r.cover)}</td></tr>`)}</tbody></table></div>
+      <tbody>${rows.map((r, i) => html`<tr class=${i === 0 ? "base" : ""}><td>${r.label}</td><td class="num">${fmt(r.hour_late)}</td><td class="num">${fmt(r.delay_h)}</td><td class="num">${fmt(r.overnight, 1)}</td><td class="num">${fmt(r.late_night)}</td><td class="num">${fmt(r.early)}</td><td class="num">${fmt(r.cost)}</td><td class="num">${i === 0 ? "–" : fmt(baseRow.cost - r.cost)}</td><td class="num">${r.cover == null ? "100%" : pct(r.cover)}</td></tr>`)}</tbody></table></div>
     <p class="foot">Per 1,000 trips. "Trips covered" is the share of 2025 trips on routes where the rule can apply (e.g. routes with two or more airlines for the preferred-carrier rule).</p>
     <${Section} title="Buffer rule · hours to land before a must-attend meeting" hint="95th percentile of trip delay incl. rebooking, nonstop trips, 2025" />
     <div class="card pad"><div class="heat"><div class="h">Departure</div>${SEASONS.map(s => html`<div class="h" style="text-align:center">${s}</div>`)}
