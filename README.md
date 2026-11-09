@@ -14,7 +14,7 @@ analysis in a traveler's hands.
 ## The team
 
 | | |
-| The | Team|
+| The | Team |
 | Akhil Hari Nair | Shon Shaju |
 | Drishti Chulani | Tanmay Yenge |
 
