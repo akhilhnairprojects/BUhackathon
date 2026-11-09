@@ -7,7 +7,7 @@ analysis in a traveler's hands.
 
 - **Live website:** https://trip-risk-checker.vercel.app
 - **Walkthrough video:** [Using Trip Risk Checker](https://www.youtube.com/watch?v=uhpqE3nwuj4)
-- **Final deck:** [`Group 7 Arrive On Time Presentation`](deck/Group7AOTPresentation.pdff)
+- **Final deck:** [`Group 7 Arrive On Time Presentation`](deck/Group7AOTPresentation.pdf)
 
 [![Using Trip Risk Checker](https://img.youtube.com/vi/uhpqE3nwuj4/hqdefault.jpg)](https://www.youtube.com/watch?v=uhpqE3nwuj4)
 
@@ -15,7 +15,7 @@ analysis in a traveler's hands.
 
 | | |
 | --- | --- |
-| Akhil Nair | Shon Shaju |
+| Akhil Hari Nair | Shon Shaju |
 | Drishti Chulani | Tanmay Yenge |
 
 ## The event
