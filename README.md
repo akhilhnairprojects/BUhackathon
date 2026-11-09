@@ -7,7 +7,7 @@ analysis in a traveler's hands.
 
 - **Live website:** https://trip-risk-checker.vercel.app
 - **Walkthrough video:** [Using Trip Risk Checker](https://www.youtube.com/watch?v=uhpqE3nwuj4)
-- **Final deck:** [`deck/Arrive_On_Time_Simple.pptx`](deck/Arrive_On_Time_Simple.pptx)
+- **Final deck:** [`Group 7 Arrive On Time Presentation`](deck/Group7_AOT.pptx.pdf)
 
 [![Using Trip Risk Checker](https://img.youtube.com/vi/uhpqE3nwuj4/hqdefault.jpg)](https://www.youtube.com/watch?v=uhpqE3nwuj4)
 
