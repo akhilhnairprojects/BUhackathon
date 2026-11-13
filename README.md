@@ -104,8 +104,8 @@ supplied by the organisers and are not included.
 ## Data sources
 
 - Bureau of Transportation Statistics, On-Time Performance, calendar year 2025.
-- NOAA GHCN-Daily weather station records, matched to 324 of 326 airports.
 - OurAirports for coordinates and runways.
+- NOAA GHCN-Daily weather station records, matched to 324 of 326 airports.
 
 Details and download logs are in [`data/external/SOURCES.md`](data/external/SOURCES.md).
 
